@@ -1,0 +1,7 @@
+Revision history for Perl extension Apache::Session::Memorycached.
+
+1.0  Sun Oct  3 15:05:46 2004
+	- original version; created by h2xs 1.22 with options
+		-XAn Apache::Session::Memorycached
+
+
