@@ -14,7 +14,7 @@ use Symbol;
 use Cache::Memcached;
 use vars qw($VERSION);
 
-$VERSION = '1.0';
+$VERSION = '1.1';
 
 
 sub new {
@@ -32,17 +32,18 @@ sub insert {
  
  my $ryserver = $session->{args}->{servers};
  my $ryserverlocal = $session->{args}->{local};
+ my $rytimeout = $session->{args}->{timeout}||'0';
  my $memd= new Cache::Memcached  { 'servers' => $ryserver };
  my $ident = $session->{data}->{_session_id}; 
  my $rhash = $session->{data};
- $memd->set($ident,$rhash);
+ $memd->set($ident,$rhash,$rytimeout);
  $memd->disconnect_all();
   if ($ryserverlocal)
      {
  my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
  my $identlocal = $session->{data}->{_session_id}; 
  my $rhashlocal = $session->{data};
- $memdlocal->set($identlocal,$rhashlocal);
+ $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
  $memdlocal->disconnect_all();
      }
 $self->{opened} = 1;
@@ -55,17 +56,18 @@ sub update {
  
  my $ryserver = $session->{args}->{servers};
  my $ryserverlocal = $session->{args}->{local};
+ my $rytimeout = $session->{args}->{timeout}||'0';
  my $memd= new Cache::Memcached  { 'servers' => $ryserver };
  my $ident = $session->{data}->{_session_id} ;
  my $rhash = $session->{data};
- $memd->set($ident,$rhash);
+ $memd->set($ident,$rhash,$rytimeout);
  $memd->disconnect_all();
   if ($ryserverlocal)
      {
  my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
  my $identlocal = $session->{data}->{_session_id}; 
  my $rhashlocal = $session->{data};
- $memdlocal->set($identlocal,$rhashlocal);
+ $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
  $memdlocal->disconnect_all();
      }
  $self->{opened} = 1;
@@ -77,6 +79,7 @@ sub materialize {
 my $ryserver = $session->{args}->{servers};
 my $rhash; 
 my $ryserverlocal = $session->{args}->{local};
+my $rytimeout = $session->{args}->{timeout}||'0';
   if ($ryserverlocal)
      {
  my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
@@ -97,7 +100,7 @@ my $ryserverlocal = $session->{args}->{local};
                      my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
                      my $identlocal = $session->{data}->{_session_id}; 
                      my $rhashlocal = $session->{data};
-                     $memdlocal->set($identlocal,$rhashlocal);
+                     $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
                      $memdlocal->disconnect_all();
                    }
 
@@ -175,7 +178,8 @@ name of the option is servers, and the value is the  same of memcached .
  Example
 
  tie %s, 'Apache::Session::Memorycached', undef,
-    {servers  => ['mymemcachedserver:port'] };
+    {servers  => ['mymemcachedserver:port'],
+     'timeout' => '300' };
 
 In order to optimize the network ,you can use a local memcached server.
 All read-only opération are sending fisrt at local server .If you need write ou rewrite data , the data is sending at the principal memcached sever and local cache too  for synchronisation.

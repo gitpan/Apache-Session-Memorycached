@@ -1,4 +1,4 @@
-Apache/Session/Memorycached version 1.0
+Apache/Session/Memorycached version 1.1
 ========================================
 
 This module extends Apache::Session for  storing session on  memcached servers.
@@ -13,6 +13,23 @@ To install this module type the following:
    make
    make test
    make install
+ 
+SYNOPSIS
+
+ use Apache::Session::Memorycached;
+
+     tie %session, 'Apache::Session::Memorycached', $cookie, {
+                 'servers' => ["10.75.1.19:11211"], #all write operations
+                 'local'  =>  ["localhost:11211"],  #read-only operations
+                 'timeout' => '300'  
+                                                   };
+
+DESCRIPTION
+       This module is an implementation of Apache::Session.  It uses the mem-
+       cached system backing store .  You may specify servers (principal)  and
+       locals caches for locking in arguments to the constructor. See the
+       example, and the documentation for Apache::Session::Store::Memorycached
+The lemonldap project (SSO/GPL) uses this modules 
 
 DEPENDENCIES
 
@@ -20,6 +37,7 @@ This module requires these other modules and libraries:
 
   Apache::Session  
   Cache::Memcached
+
 
 COPYRIGHT AND LICENCE
 

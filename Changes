@@ -4,4 +4,5 @@ Revision history for Perl extension Apache::Session::Memorycached.
 	- original version; created by h2xs 1.22 with options
 		-XAn Apache::Session::Memorycached
 
-
+1.1 Oct 8  2004
+        - Add 'timeout' session parameter 

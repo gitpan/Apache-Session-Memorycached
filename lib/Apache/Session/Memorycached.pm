@@ -12,7 +12,7 @@ package Apache::Session::Memorycached;
 use strict;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.0';
+$VERSION = '1.1';
 @ISA = qw(Apache::Session);
 
 use Apache::Session;
@@ -62,15 +62,15 @@ Apache::Session::Memorycached - An implementation of Apache::Session
     tie %session, 'Apache::Session::Memorycached', $cookie, {
           'servers' => ["10.75.1.19:11211"], #all write operations
           'local'  =>  ["localhost:11211"],  #read-only operations
-
+          'timeout' => '300'
      };
 
 =head1 DESCRIPTION
 
 This module is an implementation of Apache::Session.  It uses the memcached system backing
-store .  You may specify servers (principal)  and locals caches for locking in arguments to the constructor. See
-the example, and the documentation for Apache::Session::Store::Memorycached
+store .  You may specify servers (principal)  and locals caches for locking in arguments to the constructor. See the example, and the documentation for Apache::Session::Store::Memorycached  and Cache::Memcached .
 
+The lemonldap project (SSO under GPL)  uses this module 
 
 =head1 AUTHOR
 
