@@ -6,3 +6,7 @@ Revision history for Perl extension Apache::Session::Memorycached.
 
 1.1 Oct 8  2004
         - Add 'timeout' session parameter 
+
+2.0.0 May 04 2006 
+        - optimize persistant connection
+        - add  memd.pl in scripts directory 

@@ -8,5 +8,5 @@ WriteMakefile(
                           Cache::Memcached=> '1.0.12',
                             }, # e.g., Module::Name => 1.1
      ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-       (AUTHOR         => 'root <root@localdomain>') : ()),
+       (AUTHOR         => 'Eric German <germanlinux@yahoo.fr>') : ()),
 );

@@ -1,50 +1,38 @@
-Apache/Session/Memorycached version 1.1
-========================================
+NAME
+    Apache::Session::Memorycached - An implementation of Apache::Session
 
-This module extends Apache::Session for  storing session on  memcached servers.
+SYNOPSIS
+     use Apache::Session::Memorycached;
+ 
+        tie %session, 'Apache::Session::Memorycached', $cookie, {
+              'servers' => ["10.75.1.19:11211"], #all write operations
+              'local'  =>  ["localhost:11211"],  #read-only operations
+              'timeout' => '300'
+         };
 
+DESCRIPTION
+    This module is an implementation of Apache::Session. It uses the
+    memcached system backing store . You may specify servers (principal) and
+    locals caches for locking in arguments to the constructor. See the
+    example, and the documentation for Apache::Session::Store::Memorycached
+    and Cache::Memcached .
 
+    The lemonldap project (SSO under GPL) uses this module
 
 INSTALLATION
 
-To install this module type the following:
+perl Makefile.PL
+make
+make test
+make install
 
-   perl Makefile.PL
-   make
-   make test
-   make install
- 
-SYNOPSIS
+AUTHOR
+    This module was written by eric german <germanlinux@yahoo.fr>.
 
- use Apache::Session::Memorycached;
+     Rewrite by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
+    Hamza AISSAT<asthamza@hotmail.fr>
 
-     tie %session, 'Apache::Session::Memorycached', $cookie, {
-                 'servers' => ["10.75.1.19:11211"], #all write operations
-                 'local'  =>  ["localhost:11211"],  #read-only operations
-                 'timeout' => '300'  
-                                                   };
-
-DESCRIPTION
-       This module is an implementation of Apache::Session.  It uses the mem-
-       cached system backing store .  You may specify servers (principal)  and
-       locals caches for locking in arguments to the constructor. See the
-       example, and the documentation for Apache::Session::Store::Memorycached
-The lemonldap project (SSO/GPL) uses this modules 
-
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-  Apache::Session  
-  Cache::Memcached
-
-
-COPYRIGHT AND LICENCE
-
-Put the correct copyright and licence information here.
-
-Copyright (C) 2004 eric german <germanlinux@yahoo.fr>
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+SEE ALSO
+    Apache::Session::DB_File, Apache::Session::Flex, Apache::Session::MySQL,
+    Apache::Session::Postgres, Apache::Session
 

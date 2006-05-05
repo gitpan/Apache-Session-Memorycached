@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 #
 # Apache::Session::Store::Memorycached
 # Implements session object storage via memcached 
@@ -11,41 +11,50 @@ package Apache::Session::Store::Memorycached;
 
 use strict;
 use Symbol;
+use Data::Dumper;
 use Cache::Memcached;
 use vars qw($VERSION);
-
 $VERSION = '1.1';
 
 
 sub new {
+#This constructor allocate memory space for for the package!!
     my $class = shift;
     my $self;
-    $self->{opened} = 0;
+	$self->{opened} = 0;
     
     return bless $self, $class;
 }
 
 
 sub insert {
-    my $self    = shift;
-    my $session = shift;
- 
+#This function is called, when a tie instruction is launch with an undef id 
+#Otherwise at the first identification ( cf Login.pm )
+my $self    = shift;
+my $session = shift;
+my $retour;
  my $ryserver = $session->{args}->{servers};
  my $ryserverlocal = $session->{args}->{local};
  my $rytimeout = $session->{args}->{timeout}||'0';
  my $memd= new Cache::Memcached  { 'servers' => $ryserver };
  my $ident = $session->{data}->{_session_id}; 
  my $rhash = $session->{data};
- $memd->set($ident,$rhash,$rytimeout);
- $memd->disconnect_all();
-  if ($ryserverlocal)
+ $retour = $memd->set($ident,$rhash,$rytimeout);
+if($retour!=1){
+
+
+}
+ if ($ryserverlocal)
      {
- my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
- my $identlocal = $session->{data}->{_session_id}; 
+ my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
+ my $identlocal = $session->{data}->{_session_id};
  my $rhashlocal = $session->{data};
- $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
- $memdlocal->disconnect_all();
-     }
+ $retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
+if($retour!=1){
+}
+      
+
+}
 $self->{opened} = 1;
  
  }
@@ -53,22 +62,33 @@ $self->{opened} = 1;
 sub update {
     my $self    = shift;
     my $session = shift;
- 
+ my $retour;
  my $ryserver = $session->{args}->{servers};
  my $ryserverlocal = $session->{args}->{local};
  my $rytimeout = $session->{args}->{timeout}||'0';
- my $memd= new Cache::Memcached  { 'servers' => $ryserver };
- my $ident = $session->{data}->{_session_id} ;
+ 
+my $memd= new Cache::Memcached  { 'servers' => $ryserver };
+ 
+my $ident = $session->{data}->{_session_id} ;
  my $rhash = $session->{data};
- $memd->set($ident,$rhash,$rytimeout);
- $memd->disconnect_all();
-  if ($ryserverlocal)
-     {
- my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
+$retour =  $memd->set($ident,$rhash,$rytimeout);
+if($retour!=1){
+
+
+}
+
+if ($ryserverlocal)
+    {
+ my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
  my $identlocal = $session->{data}->{_session_id}; 
  my $rhashlocal = $session->{data};
- $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
- $memdlocal->disconnect_all();
+$retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
+if($retour!=1){
+
+
+}
+
+
      }
  $self->{opened} = 1;
 }
@@ -76,56 +96,71 @@ sub update {
 sub materialize {
     my $self    = shift;
     my $session = shift;
+
 my $ryserver = $session->{args}->{servers};
 my $rhash; 
 my $ryserverlocal = $session->{args}->{local};
 my $rytimeout = $session->{args}->{timeout}||'0';
   if ($ryserverlocal)
      {
- my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
+ my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
  my $identlocal = $session->{data}->{_session_id}; 
  $rhash = $memdlocal->get($identlocal);
- $memdlocal->disconnect_all();
-    }
+     }
  unless ($rhash)
           {
-           my $memd= new Cache::Memcached  { 'servers' => $ryserver };
-           my $ident = $session->{data}->{_session_id}; 
+	   #print STDERR "MATERIALIZE : RIEN SUR SERVEUR LOCAL $$ !!!\n";
+   	   my $memd= new Cache::Memcached  { 'servers' => $ryserver };
+           my $ident = $session->{data}->{_session_id};
            $rhash = $memd->get($ident);
-           $memd->disconnect_all();
+		if(!defined($rhash)){
+			
+
+		}
  ## the data is in the  principal cache notin the local cache 
  ##  we must put data in it.
-            if ($ryserverlocal)
+            if ($ryserverlocal && $rhash)
                   {
-                     my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
+			#print STDERR "MATERIALIZE : REPERCUSSION SUR SERVEUR LOCAL $$ !!!\n";
+                     my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
                      my $identlocal = $session->{data}->{_session_id}; 
                      my $rhashlocal = $session->{data};
-                     $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
-                     $memdlocal->disconnect_all();
-                   }
+                     $memdlocal->set($identlocal,$rhash,$rytimeout);
+                     if($!){
 
-         }
+			
+                     }
+		}
+
+            }
+
  $self->{opened} = 1;
- $session->{data} =$rhash;
-    
+ 
+$session->{data} =$rhash;
+#if(!defined($rhash)){
+#$session->{error} = 1;
+#                }
+  
 }    
 
 sub remove {
     my $self    = shift;
     my $session = shift;
+
     my $ryserver = $session->{args}->{servers};
-    my $memd= new Cache::Memcached  { 'servers' => $ryserver };
+
+
+my $memd= new Cache::Memcached  { 'servers' => $ryserver};
+
     my $ryserverlocal = $session->{args}->{local};
     my $ident = $session->{data}->{_session_id} ;
         $memd->delete($ident);  
-        $memd->disconnect_all();
      if ($ryserverlocal)
           {
             my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
             my $identlocal = $session->{data}->{_session_id}; 
             $memdlocal->delete($identlocal);
-            $memdlocal->disconnect_all();
-          }
+           }
  
    $self->{opened} = 0;
     
@@ -133,7 +168,7 @@ sub remove {
 
 sub close {
     my $self = shift;
-    
+
     if ($self->{opened}) {
         $self->{opened} = 0;
     }
@@ -141,7 +176,7 @@ sub close {
 
 sub DESTROY {
     my $self = shift;
-    
+
     if ($self->{opened}) {    
     }
 }

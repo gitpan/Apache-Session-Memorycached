@@ -12,7 +12,7 @@ package Apache::Session::Memorycached;
 use strict;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '1.1';
+$VERSION = '2.0.0';
 @ISA = qw(Apache::Session);
 
 use Apache::Session;
@@ -75,6 +75,10 @@ The lemonldap project (SSO under GPL)  uses this module
 =head1 AUTHOR
 
 This module was written by eric german <germanlinux@yahoo.fr>.
+ 
+ Rewrite by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
+Hamza AISSAT<asthamza@hotmail.fr>
+
 
 =head1 SEE ALSO
 
