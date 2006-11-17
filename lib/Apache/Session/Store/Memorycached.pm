@@ -13,8 +13,9 @@ use strict;
 use Symbol;
 use Data::Dumper;
 use Cache::Memcached;
+use Digest::MD5 qw(md5_hex);
 use vars qw($VERSION);
-$VERSION = '1.1';
+$VERSION = '2.1';
 
 
 sub new {
@@ -32,30 +33,36 @@ sub insert {
 #Otherwise at the first identification ( cf Login.pm )
 my $self    = shift;
 my $session = shift;
-my $retour;
- my $ryserver = $session->{args}->{servers};
- my $ryserverlocal = $session->{args}->{local};
- my $rytimeout = $session->{args}->{timeout}||'0';
- my $memd= new Cache::Memcached  { 'servers' => $ryserver };
- my $ident = $session->{data}->{_session_id}; 
- my $rhash = $session->{data};
- $retour = $memd->set($ident,$rhash,$rytimeout);
-if($retour!=1){
 
+	if (! exists $session->{args}->{updateOnly} 
+		 || $session->{args}->{updateOnly} != 1 ) {
 
-}
- if ($ryserverlocal)
-     {
- my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
- my $identlocal = $session->{data}->{_session_id};
- my $rhashlocal = $session->{data};
- $retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
-if($retour!=1){
-}
-      
-
-}
-$self->{opened} = 1;
+		 my $retour;
+		 my $ryserver = $session->{args}->{servers};
+		 my $ryserverlocal = $session->{args}->{local};
+		 my $rytimeout = $session->{args}->{timeout}||'0';
+		 my $memd= new Cache::Memcached  { 'servers' => $ryserver };
+		 my $ident = $session->{data}->{_session_id}; 
+		 my $rhash = $session->{data};
+		 $retour = $memd->set($ident,$rhash,$rytimeout);
+		if($retour!=1){
+		
+		
+		}
+		 if ($ryserverlocal)
+		     {
+		 my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
+		 my $identlocal = $session->{data}->{_session_id};
+		 my $rhashlocal = $session->{data};
+		 $retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
+		if($retour!=1){
+		}
+		      
+		
+		}
+	}
+	
+	$self->{opened} = 1;
  
  }
 
@@ -66,12 +73,24 @@ sub update {
  my $ryserver = $session->{args}->{servers};
  my $ryserverlocal = $session->{args}->{local};
  my $rytimeout = $session->{args}->{timeout}||'0';
- 
+ my $principalkey;
+ my $keyvalue;
 my $memd= new Cache::Memcached  { 'servers' => $ryserver };
  
 my $ident = $session->{data}->{_session_id} ;
  my $rhash = $session->{data};
+if ( $session->{args}->{principal} ) {
+$principalkey =  $session->{args}->{principal} ;
+$keyvalue= $session->{data}->{$principalkey} ;
+$keyvalue =  md5_hex($keyvalue) ; 
+$memd->set($keyvalue,$ident,$rytimeout) if $keyvalue;
+my $identp = $principalkey.'_MD5';
+$session->{data}->{$identp} = $keyvalue ;
+}
 $retour =  $memd->set($ident,$rhash,$rytimeout);
+
+
+
 if($retour!=1){
 
 
@@ -82,7 +101,15 @@ if ($ryserverlocal)
  my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal};
  my $identlocal = $session->{data}->{_session_id}; 
  my $rhashlocal = $session->{data};
-$retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
+####  in order to prepare identify federation ####
+if ( $session->{args}->{principal} ) {
+$memdlocal->set($keyvalue,$identlocal,$rytimeout) if $keyvalue;
+}
+
+ $retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
+
+
+
 if($retour!=1){
 
 
@@ -90,6 +117,7 @@ if($retour!=1){
 
 
      }
+##################################################
  $self->{opened} = 1;
 }
 
@@ -151,15 +179,25 @@ sub remove {
 
 
 my $memd= new Cache::Memcached  { 'servers' => $ryserver};
-
+    my $principalkey;
+    my $identp;
+    my $keyvalue;
     my $ryserverlocal = $session->{args}->{local};
     my $ident = $session->{data}->{_session_id} ;
-        $memd->delete($ident);  
+if ( $session->{args}->{principal} ) {
+
+      $principalkey =  $session->{args}->{principal} ;
+      $identp = $principalkey.'_MD5';
+      $keyvalue= $session->{data}->{$identp} ;
+      $memd->delete($keyvalue) if $keyvalue ;
+  }
+            $memd->delete($ident);  
      if ($ryserverlocal)
           {
             my $memdlocal= new Cache::Memcached  { 'servers' => $ryserverlocal };
             my $identlocal = $session->{data}->{_session_id}; 
-            $memdlocal->delete($identlocal);
+         $memdlocal->delete($keyvalue) if $keyvalue ;
+         $memdlocal->delete($identlocal);
            }
  
    $self->{opened} = 0;
@@ -214,10 +252,20 @@ name of the option is servers, and the value is the  same of memcached .
 
  tie %s, 'Apache::Session::Memorycached', undef,
     {servers  => ['mymemcachedserver:port'],
-     'timeout' => '300' };
+     'timeout' => '300',
+     'updateOnly' => 1 ,
+     'principal' => uid,  
+        };
 
 In order to optimize the network ,you can use a local memcached server.
 All read-only opération are sending fisrt at local server .If you need write ou rewrite data , the data is sending at the principal memcached sever and local cache too  for synchronisation.
+
+note :  'updateOnly' => 1  just realize up-date operation not init operation. 
+ Init operation is use in order to book and lock the number session but it's not available in this module 
+ 
+  'principal' => uid :  this  parameter is use to create reverse reference 
+  like this : MD5_hex(uid) => id_session in memcached server . By this it usefull to retrieve id_session from principal name . And add uid_MD5 => MD5_hex(uid) in main session .
+ 
 
 =head1 NOTES
 

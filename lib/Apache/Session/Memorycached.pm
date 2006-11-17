@@ -12,7 +12,7 @@ package Apache::Session::Memorycached;
 use strict;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '2.0.0';
+$VERSION = '2.1.0';
 @ISA = qw(Apache::Session);
 
 use Apache::Session;
@@ -65,6 +65,26 @@ Apache::Session::Memorycached - An implementation of Apache::Session
           'timeout' => '300'
      };
 
+ tie %s, 'Apache::Session::Memorycached', undef,
+    {servers  => ['mymemcachedserver:port'],
+     'timeout' => '300',
+     'updateOnly' => 1 ,
+     'principal' => uid,  
+        };
+
+In order to optimize the network ,you can use a local memcached server.
+All read-only opération are sending fisrt at local server .If you need write ou rewrite data , the data is sending at the principal memcached sever and local cache too  for synchronisation.
+
+note :  'updateOnly' => 1  just realize up-date operation not init operation. 
+ Init operation is use in order to book and lock the number session but it's not available in this module 
+ 
+  'principal' => uid :  this  parameter is use to create reverse reference 
+  like this : MD5_hex(uid) => id_session in memcached server . By this it usefull to retrieve id_session from principal name . And add uid_MD5 => MD5_hex(uid) in main session .
+ 
+
+
+
+
 =head1 DESCRIPTION
 
 This module is an implementation of Apache::Session.  It uses the memcached system backing
@@ -76,7 +96,7 @@ The lemonldap project (SSO under GPL)  uses this module
 
 This module was written by eric german <germanlinux@yahoo.fr>.
  
- Rewrite by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
+ Completed by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
 Hamza AISSAT<asthamza@hotmail.fr>
 
 
