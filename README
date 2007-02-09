@@ -36,6 +36,28 @@ DESCRIPTION
     example, and the documentation for Apache::Session::Store::Memorycached
     and Cache::Memcached .
 
+REPLICATION
+     Now Apache::Session::Memorycahed inclues replication between memecached servers 
+     Two new components provide a replication service . 
+     First package is Apache::Session::MemcachedReplicator
+     Second is Apache::Session::MemcachedClient 
+
+     It's now possible to do replication master to slave or master to master
+     see man pages and scripts .
+
+SOAP service
+     Now Apache::Session::Memorycached inclues a SOAP service in order to set or 
+     get %session in any language . The SOAP service translates data in Perl hashes
+ 
+  Installation of SOAP service
+     All scripts are in scripts directory
+
+     Put MemcachedSOAPClass.pm and MemcachedSOAP.cgi in the cgi-bin directory of your apache server with the appropriate right (x) . 
+     Change in MemcachedSOAP.cgi the memcached server address .
+      (line 11 : $machine = 'ip.ip.ip.ip:11211';  )
+  
+     Try the three scripts  statTest.pl (first !)  then getTest.pl finish with setTest.pl. 
+ 
     The lemonldap project (SSO under GPL) uses this module
 
 AUTHOR
@@ -43,8 +65,11 @@ AUTHOR
 
      Completed by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
     Hamza AISSAT<asthamza@hotmail.fr>
+ 
+     SOAP service is a contribution of  Casimir ANTUNES .
 
 SEE ALSO
-    Apache::Session::DB_File, Apache::Session::Flex, Apache::Session::MySQL,
-    Apache::Session::Postgres, Apache::Session
+    Apache::Session::DB_File, Apache::Session::Flex,
+    Apache::Session::MemcachedClient,Apache::Session::MemcachedReplicator,
+    Apache::Session::MySQL, Apache::Session::Postgres, Apache::Session
 

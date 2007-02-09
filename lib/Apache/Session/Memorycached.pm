@@ -12,7 +12,7 @@ package Apache::Session::Memorycached;
 use strict;
 use vars qw(@ISA $VERSION);
 
-$VERSION = '2.1.0';
+$VERSION = '2.2.0';
 @ISA = qw(Apache::Session);
 
 use Apache::Session;
@@ -90,6 +90,34 @@ note :  'updateOnly' => 1  just realize up-date operation not init operation.
 This module is an implementation of Apache::Session.  It uses the memcached system backing
 store .  You may specify servers (principal)  and locals caches for locking in arguments to the constructor. See the example, and the documentation for Apache::Session::Store::Memorycached  and Cache::Memcached .
 
+
+=head1 REPLICATION
+  
+ Now Apache::Session::Memorycahed inclues replication between memecached servers 
+ Two new components provide a replication service . 
+ First package is Apache::Session::MemcachedReplicator
+ Second is Apache::Session::MemcachedClient 
+
+ It's now possible to do replication master to slave or master to master
+ see man pages and scripts .
+
+
+=head1 SOAP service
+
+ Now Apache::Session::Memorycached inclues a SOAP service in order to set or 
+ get %session in any language . The SOAP service translates data in Perl hashes
+ 
+=head2 Installation of SOAP service 
+ 
+ All scripts are in scripts directory
+
+ Put MemcachedSOAPClass.pm and MemcachedSOAP.cgi in the cgi-bin directory of your apache server with the appropriate right (x) . 
+ Change in MemcachedSOAP.cgi the memcached server address .
+  (line 11 : $machine = 'ip.ip.ip.ip:11211';  )
+  
+ Try the three scripts  statTest.pl (first !)  then getTest.pl finish with setTest.pl. 
+ 
+
 The lemonldap project (SSO under GPL)  uses this module 
 
 =head1 AUTHOR
@@ -98,9 +126,11 @@ This module was written by eric german <germanlinux@yahoo.fr>.
  
  Completed by  Habib ZITOUNI <zitouni.habib@gmail.com> and 
 Hamza AISSAT<asthamza@hotmail.fr>
-
+ 
+ SOAP service is a contribution of  Casimir ANTUNES .
 
 =head1 SEE ALSO
 
 L<Apache::Session::DB_File>, L<Apache::Session::Flex>,
+L<Apache::Session::MemcachedClient>,L<Apache::Session::MemcachedReplicator>,
 L<Apache::Session::MySQL>, L<Apache::Session::Postgres>, L<Apache::Session>

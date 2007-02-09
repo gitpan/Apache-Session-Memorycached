@@ -13,4 +13,6 @@ Revision history for Perl extension Apache::Session::Memorycached.
 
 2.1.0  Nov 17  2006
         - add reverse reference on principal identity  
- 
+2.2.0  Feb 09  2007
+        - add two replication daemons 
+	- add SOAP service 

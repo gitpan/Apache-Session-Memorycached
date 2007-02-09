@@ -19,7 +19,8 @@ BEGIN{ print "--> Version : ".$Apache::Session::Memorycached::VERSION."\n"; }
 # Object creation
 #====================================================================
 my $id;
-my $ression =   tie %session, 'Apache::Session::Memorycached', $id,
+my %session;
+tie %session, 'Apache::Session::Memorycached', $id,
                                 {
                          'servers' => ["localhost:11211"],
                                 };
@@ -29,13 +30,11 @@ ok( $id,"session ID : $id" );
 $session{'test'}='memcached daemon running' ;
 $session{'test2'}='ericgerman' ;
 untie %session ;
-undef $ression;
- $ression =   tie %session, 'Apache::Session::Memorycached', $id,
+tie %session, 'Apache::Session::Memorycached', $id,
                                 {
                          'servers' => ["localhost:11211"],
                                 };
 $session{test} = 'memcached daemon not running' unless $session{test};
 is($session{test},'memcached daemon running',"memcached ready"); 
-
-
+untie %session;
 

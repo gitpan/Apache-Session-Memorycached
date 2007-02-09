@@ -46,8 +46,7 @@ my $session = shift;
 		 my $rhash = $session->{data};
 		 $retour = $memd->set($ident,$rhash,$rytimeout);
 		if($retour!=1){
-		
-		
+			$memd->set($ident,$rhash,$rytimeout);		
 		}
 		 if ($ryserverlocal)
 		     {
@@ -56,6 +55,7 @@ my $session = shift;
 		 my $rhashlocal = $session->{data};
 		 $retour = $memdlocal->set($identlocal,$rhashlocal,$rytimeout);
 		if($retour!=1){
+			$memdlocal->set($identlocal,$rhashlocal,$rytimeout);
 		}
 		      
 		
